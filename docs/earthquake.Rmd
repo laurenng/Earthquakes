@@ -1,0 +1,110 @@
+---
+title: "Earthquake!"
+author: "Lauren Ng"
+date: "12/2/2019"
+output: html_document
+---
+
+```{r echo=FALSE, messages=FALSE}
+source("earthquake_analysis.R")
+```
+
+## Introduction
+Earthquakes are a force to be reckoned with. They’re powerful jolts caused by
+movement underneath the surface that can drastically change our world and
+environment. For this project, I will be analyzing a database that records
+significant earthquakes  (5.5+ magnitude) from 1965 to 2016. The entire
+dataset is compiled by The National Earthquake Information Center (NEIC).
+Which takes data from national and international agencies, scientists,
+critical facilities, and the general public and complies the information
+gathered. The main goal of this dataset is to provide another resource for
+scientists researching trends and networks of global seismographic reports.
+But also utilized for public knowledge and interpretations since the source
+is on kaggle and accessible to everyone. [Here is the link to the database](https://www.kaggle.com/usgs/earthquake-database)
+
+## Data + Discussion 
+Looking at the various plots of the graph can display a lot of information
+that can often be looked over or ignored when looking just at the dataset,
+since it is very dense. Using plots can summarize the data collected and make
+the data visualizable. Since the information was very dense, I have made a
+couple plots to understand most aspects of the dataset.
+
+```{r echo=FALSE, messages=FALSE}
+year_breakdown 
+```
+
+The first visualization is to answer the question: Are the number of
+earthquakes increasing every year? To answer, I added the number of
+earthquakes every year and plotted the values on a line graph. This enables
+readers to see the trend of number of earthquakes each year.  From first
+glance, it looks like the number of earthquakes fluctuates randomly where
+one year is 100 more or less than the previous year. However, looking
+carefully, there is an upward trend. Which might mean that future years might
+have a large amount of earthquakes each year. And this could affect more than
+the people living on the fault line. However, we must also ask the question
+of whether this information is reliable. The technology in the 1960’s might
+not have detected every significant earthquake due to the lack of sophisticated
+technology, so it is up to us to decide if it’s accurate. Nevertheless, there
+is always around 500 earthquakes each year so citizens be warned!
+
+```{r echo=FALSE, messages=FALSE}
+mapping
+```
+caption: displays location of earthquakes 
+
+This plot displays the locations of earthquakes, which is important when
+trying to understand where to be more cautious and predict future locations
+of earthquakes. Back then, researchers were able to determine the location
+of fault lines by these earthquake recordings. So highlighting these locations
+might uncover a new fault line or discovery. It also informs citizens in the
+areas to be prepared for earthquakes since there has been a history of
+earthquakes. 
+
+## Reflection 
+Overall, this extra analysis has pushed me to learn more about R and about a
+topic that has impacted my life. Growing up in California, we regularly had
+earthquakes, both small and large. Understanding the reasons why and when can
+be really beneficial since as a child, I thought the world was going to crumble
+when an earthquake hit. It was a really neat experience to relate data science
+to something I care about and learn more about the topic. I also feel like I
+learned a lot more about R and practiced the skills I learned in the course on
+my own. There is much more that meets the surface, both technically and
+information based. There is always more to the information presented, like we
+saw here with the dataset and visualizations. And technically, especially when
+coding in R. We only hit the surface but there is a lot more that we haven’t
+explored. And doing this project has encouraged me to take on my own projects,
+since I was able to do this project without much help. 
+
+## My code for the data analysis 
+df <- read.csv("database.csv")
+### Year breakdown
+year <- df %>%
+  mutate(year = as.numeric(substring(df$Date, 7,11))) %>%
+  group_by(year) %>%
+  count()
+officalYear <- year[complete.cases(year), ]
+
+year_breakdown <- ggplot(officalYear, aes(x=year, y=n)) +
+  scale_x_continuous(breaks=seq(1965, 2016, 5)) + 
+  geom_line(group = 1) + labs(x = "year", y = "# of earthquakes",
+                              title = "Number of Earthquakes every year",
+                              caption = "(based on data from earthquake database. 
+                              which only counts significant earthquakes that have 
+                              a magnitude of 5.5 or higher.)")
+
+### Map of earthquake locations
+map <- list(
+  scope = "world",
+  showland = TRUE,
+  landcolor = toRGB("gray95"),
+  countrycolor = toRGB("black")
+)
+
+map <- plot_geo(df, lat = ~Latitude, lon = ~Longitude) %>%
+add_markers(
+  text = ~paste("State: ", Magnitude),
+  colors = c("yellow", "orange", "red", "red2", "red3"),
+  color = ~Magnitude, symbol = I("circle"), hoverinfo = "text",
+  marker = list(size = ~Magnitude)) %>%
+  colorbar(title = "Magnitude") %>%
+  layout(title = "Locations of Earthq", geo = map)
